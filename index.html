@@ -1,147 +1,165 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <title>Калькулятор Эхо‑и УЗ‑индексов</title>
-    <style>
-        body{font-family:sans-serif;max-width:900px;margin:auto;padding:1rem}
-        h2{font-size:1.6rem;margin-top:0}
-        h3{margin-top:2rem}
-        label{display:block;margin-top:.75rem}
-        input{width:100%;padding:.3rem .4rem;box-sizing:border-box}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-        button{margin-top:1rem;padding:.5rem 1.5rem;font-size:1rem;cursor:pointer;border-radius:6px;border:1px solid #ccc}
-        textarea{width:100%;height:260px;margin-top:1rem;font-family:monospace}
-        footer{margin-top:2rem;font-size:.8rem;color:#555}
-    </style>
+  <meta charset="UTF-8" />
+  <title>Калькулятор кардиоуз‑протокола</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1080px; margin: auto; padding: 1rem; }
+    h2 { font-size: 1.6rem; margin-top: 0; }
+    h3 { margin: 1.4rem 0 0.4rem; }
+    label { display: block; margin-top: 0.55rem; }
+    input { width: 100%; padding: 0.3rem 0.45rem; box-sizing: border-box; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 1rem; }
+    button { margin-top: 1.2rem; padding: 0.6rem 1.6rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; }
+    textarea { width: 100%; height: 340px; margin-top: 1rem; font-family: monospace; }
+    footer { margin-top: 2rem; font-size: 0.8rem; color: #555; }
+  </style>
 </head>
 <body>
-<h2>Калькулятор Эхо‑протокола и сосудистых индексов</h2>
-<p>Заполните измеренные значения — калькулятор рассчитает показатели и сформирует готовый блок текста для вставки в МИС/Word/Libre.</p>
-<form id="echoForm" onsubmit="event.preventDefault();calculate();">
-    <div class="grid">
-        <!-- общие параметры -->
-        <div>
-            <h3>Антропометрия</h3>
-            <label>Рост (см)<input type="number" id="height" step="0.1" required></label>
-            <label>Масса тела (кг)<input type="number" id="weight" step="0.1" required></label>
-        </div>
-        <div>
-            <h3>Левый желудочек</h3>
-            <label>МЖПд&nbsp;— толщина МЖП, см<input type="number" id="ivsd" step="0.01" required></label>
-            <label>КДР&nbsp;— конечно‑диастолический размер, см<input type="number" id="lvedd" step="0.01" required></label>
-            <label>ТЗСЛЖд&nbsp;— толщина задней стенки, см<input type="number" id="pwd" step="0.01" required></label>
-        </div>
-    </div>
+  <h2>Калькулятор Эхо‑ и УЗ‑показателей</h2>
+  <p>Заполните измерения — снизу появится блок текста, готовый для копирования в&nbsp;МИС&nbsp;Барс.</p>
+
+  <form id="f" onsubmit="event.preventDefault(); calc();">
 
     <div class="grid">
-        <div>
-            <h3>Предсердия / Аорта</h3>
-            <label>Объём ЛП (мл)<input type="number" id="la_vol" step="0.1"></label>
-            <label>Площадь ПП (см²)<input type="number" id="ra_area" step="0.1"></label>
-            <label>Диаметр восходящей аорты (мм)<input type="number" id="ao_diam" step="0.1"></label>
-        </div>
-        <div>
-            <h3>Диастолическая функция</h3>
-            <label>E&nbsp;— скорость трансмитрального потока, м/с<input type="number" id="e_vel" step="0.01"></label>
-            <label>e' — TDI скорость кольца, м/с<input type="number" id="eprime_vel" step="0.01"></label>
-        </div>
+      <div>
+        <h3>Антропометрия</h3>
+        <label>Рост (см)<input type="number" id="h" step="0.1" required></label>
+        <label>Масса (кг)<input type="number" id="w" step="0.1" required></label>
+      </div>
+      <div>
+        <h3>ЛЖ и стенки</h3>
+        <label>МЖПд (см)<input type="number" id="ivsd" step="0.01" required></label>
+        <label>КДР (см)<input type="number" id="lvedd" step="0.01" required></label>
+        <label>ТЗСЛЖд (см)<input type="number" id="pwd" step="0.01" required></label>
+      </div>
+      <div>
+        <h3>Предсердия / Аорта</h3>
+        <label>Объём ЛП (мл)<input type="number" id="la_vol" step="0.1"></label>
+        <label>Площадь ПП (см²)<input type="number" id="ra_area" step="0.1"></label>
+        <label>Диаметр аорты (мм)<input type="number" id="ao_d" step="0.1"></label>
+      </div>
+      <div>
+        <h3>Диастолическая функция</h3>
+        <label>E (м/с) — трансмитральный<input type="number" id="e" step="0.01"></label>
+        <label>e′ (м/с) — TDI<input type="number" id="eprime" step="0.01"></label>
+      </div>
     </div>
 
-    <h3>Допплер УЗДГ БЦА</h3>
+    <h3>Градиент по клапанам — пик. скорость V<sub>max</sub> (м/с)</h3>
     <div class="grid">
-        <div>
-            <label>Vsystole — пиковая систолическая скорость, см/с<input type="number" id="v_sys" step="0.1"></label>
-            <label>Vdiastole — конечная диастолическая скорость, см/с<input type="number" id="v_dia" step="0.1"></label>
-        </div>
-        <div>
-            <label>Скорость&nbsp;V1 в позвоночной артерии, см/с<input type="number" id="v1" step="0.1"></label>
-            <label>Скорость&nbsp;V2 в позвоночной артерии, см/с<input type="number" id="v2" step="0.1"></label>
-            <label>Площадь ВЯВ (см²)<input type="number" id="area_vyav" step="0.01"></label>
-            <label>Площадь ОСА (см²)<input type="number" id="area_osa" step="0.01"></label>
-        </div>
+      <label>Митральный<input type="number" id="v_mv" step="0.01"></label>
+      <label>Аортальный<input type="number" id="v_av" step="0.01"></label>
+      <label>Трикуспидальный<input type="number" id="v_tv" step="0.01"></label>
+      <label>Клапан лёгочной артерии<input type="number" id="v_pv" step="0.01"></label>
+    </div>
+
+    <h3>Индексы резистентности (RI) — Vs / Vd, см/с</h3>
+    <div class="grid">
+      <label>ОСА&nbsp;R Vs<input type="number" id="osa_r_vs" step="0.1"></label>
+      <label>ОСА&nbsp;R Vd<input type="number" id="osa_r_vd" step="0.1"></label>
+      <label>ОСА&nbsp;L Vs<input type="number" id="osa_l_vs" step="0.1"></label>
+      <label>ОСА&nbsp;L Vd<input type="number" id="osa_l_vd" step="0.1"></label>
+      <label>ВСА&nbsp;R Vs<input type="number" id="ica_r_vs" step="0.1"></label>
+      <label>ВСА&nbsp;R Vd<input type="number" id="ica_r_vd" step="0.1"></label>
+      <label>ВСА&nbsp;L Vs<input type="number" id="ica_l_vs" step="0.1"></label>
+      <label>ВСА&nbsp;L Vd<input type="number" id="ica_l_vd" step="0.1"></label>
+      <label>НСА&nbsp;R Vs<input type="number" id="eca_r_vs" step="0.1"></label>
+      <label>НСА&nbsp;R Vd<input type="number" id="eca_r_vd" step="0.1"></label>
+      <label>НСА&nbsp;L Vs<input type="number" id="eca_l_vs" step="0.1"></label>
+      <label>НСА&nbsp;L Vd<input type="number" id="eca_l_vd" step="0.1"></label>
+      <label>ПА&nbsp;R Vs<input type="number" id="va_r_vs" step="0.1"></label>
+      <label>ПА&nbsp;R Vd<input type="number" id="va_r_vd" step="0.1"></label>
+      <label>ПА&nbsp;L Vs<input type="number" id="va_l_vs" step="0.1"></label>
+      <label>ПА&nbsp;L Vd<input type="number" id="va_l_vd" step="0.1"></label>
+    </div>
+
+    <h3>Позвоночные артерии — градиент снижения скорости</h3>
+    <div class="grid">
+      <label>V<sub>1</sub> R, см/с<input type="number" id="v1_r" step="0.1"></label>
+      <label>V<sub>2</sub> R, см/с<input type="number" id="v2_r" step="0.1"></label>
+      <label>V<sub>1</sub> L, см/с<input type="number" id="v1_l" step="0.1"></label>
+      <label>V<sub>2</sub> L, см/с<input type="number" id="v2_l" step="0.1"></label>
+      <label>Площадь ВЯВ (см²)<input type="number" id="area_vyav" step="0.01"></label>
+      <label>Площадь ОСА (см²)<input type="number" id="area_osa" step="0.01"></label>
     </div>
 
     <button type="submit">Рассчитать</button>
-</form>
+  </form>
 
-<h3>Сформированный блок</h3>
-<textarea id="output" readonly placeholder="После расчёта здесь появится текст...\n"></textarea>
+  <h3>Сформированный блок</h3>
+  <textarea id="out" readonly placeholder="После расчёта появится полный текст..."></textarea>
 
-<footer>
-<p>⚠️ Проверяйте результаты; формулы соответствуют рекомендациям ASE/EACVI и общепринятой гемодинамике.</p>
-</footer>
+  <footer>⚠️ Проверьте данные перед сохранением в&nbsp;МИС.</footer>
 
 <script>
-function pow(x,p){return Math.pow(x,p);} // короткая обёртка
-function val(id){return parseFloat(document.getElementById(id).value)||0;}
-function nz(n,fix=2){return n? n.toFixed(fix):'—';}
-function calculate(){
-    const h=val('height');
-    const w=val('weight');
-    const ivsd=val('ivsd');
-    const lvedd=val('lvedd');
-    const pwd=val('pwd');
-    const height_m=h/100;
-
-    // базовые формулы
-    const bsa=0.007184*pow(h,0.725)*pow(w,0.425);
-    const lvMass=0.8*1.04*(pow(ivsd+lvedd+pwd,3)-pow(lvedd,3))+0.6;
-    const lvMassIdx=lvMass/bsa;
-
-    // новые индексы
-    const laVol=val('la_vol');
-    const laIndex=laVol? laVol/bsa:0;
-
-    const aoDiam=val('ao_diam');
-    const aoIndex=aoDiam? aoDiam/height_m:0;
-
-    const aseIndex=lvMass? lvMass/pow(height_m,2.7):0;
-
-    const raArea=val('ra_area');
-    const raIndex=raArea? raArea/bsa:0;
-
-    // диастолическая
-    const eVel=val('e_vel');
-    const ePrime=val('eprime_vel');
-    const eeRatio=(eVel&&ePrime)? eVel/ePrime:0;
-    const gradientE=eVel? 4*pow(eVel,2):0;
-
-    // УЗДГ
-    const vSys=val('v_sys');
-    const vDia=val('v_dia');
-    const ri=(vSys&&vDia)? (vSys-vDia)/vSys:0;
-
-    const v1=val('v1');
-    const v2=val('v2');
-    const gradDrop=(v1&&v2)? (v1-v2)/v1*100:0;
-
-    const areaVyav=val('area_vyav');
-    const areaOsa=val('area_osa');
-    const areaRatio=(areaVyav&&areaOsa)? areaVyav/areaOsa:0;
-
-    // вывод
-    const lines=[
-        `Площадь поверхности тела (ППТ), м²: ${nz(bsa)}`,
-        `Масса миокарда (ММЛЖ), г: ${nz(lvMass,0)}`,
-        `Индекс массы миокарда (ИММ), г/м²: ${nz(lvMassIdx,0)}`,
-        `Индекс ASE (ММЛЖ / H^2.7), г/м^2.7: ${nz(aseIndex,0)}`,
-        `\nПредсердия / Аорта:`,
-        `Индекс объёма ЛП, мл/м²: ${nz(laIndex)}`,
-        `Индекс площади ПП, см²/м²: ${nz(raIndex)}`,
-        `Индекс диаметра аорты, мм/м: ${nz(aoIndex)}`,
-        `\nДиастолическая функция:`,
-        `ΔP (E), мм рт. ст.: ${nz(gradientE,1)}`,
-        `Отношение E/e': ${nz(eeRatio,1)}`,
-        `\nУЗДГ БЦА:`,
-        `Индекс резистентности (RI): ${nz(ri,2)}`,
-        `Соотношение площадей ВЯВ/ОСА: ${nz(areaRatio,2)}`,
-        `Градиент снижения скорости в позвоночных артериях, %: ${nz(gradDrop,1)}`,
-        '\n───'
-    ];
-    const out=document.getElementById('output');
-    out.value=lines.join('\n');
-    out.focus();out.select();
+function g(id){return parseFloat(document.getElementById(id).value)||0;}
+function nz(v,fix=2){return v? v.toFixed(fix):'—';}
+function ri(vs,vd){return vs? (vs-vd)/vs:0;}
+function grad(v){return v? 4*Math.pow(v,2):0;}
+function calc(){
+  const h=g('h'); const w=g('w'); const ivsd=g('ivsd'); const lvedd=g('lvedd'); const pwd=g('pwd');
+  const height_m=h/100;
+  const bsa=0.007184*Math.pow(h,0.725)*Math.pow(w,0.425);
+  const lvMass=0.8*1.04*(Math.pow(ivsd+lvedd+pwd,3)-Math.pow(lvedd,3))+0.6;
+  const lvMassIdx=lvMass/bsa;
+  const aseIdx=lvMass/Math.pow(height_m,2.7);
+  const ots=2*pwd/lvedd;
+  const laIdx=g('la_vol')? g('la_vol')/bsa:0;
+  const raIdx=g('ra_area')? g('ra_area')/bsa:0;
+  const aoIdx=g('ao_d')? g('ao_d')/height_m:0;
+  const e=g('e'); const eprime=g('eprime'); const egrad=grad(e); const eeratio=(e&&eprime)? e/eprime:0;
+  const valve={
+    MV:grad(g('v_mv')),
+    AV:grad(g('v_av')),
+    TV:grad(g('v_tv')),
+    PV:grad(g('v_pv'))
+  };
+  const vessels=[
+    {name:'ОСА R',vs:g('osa_r_vs'),vd:g('osa_r_vd')},
+    {name:'ОСА L',vs:g('osa_l_vs'),vd:g('osa_l_vd')},
+    {name:'ВСА R',vs:g('ica_r_vs'),vd:g('ica_r_vd')},
+    {name:'ВСА L',vs:g('ica_l_vs'),vd:g('ica_l_vd')},
+    {name:'НСА R',vs:g('eca_r_vs'),vd:g('eca_r_vd')},
+    {name:'НСА L',vs:g('eca_l_vs'),vd:g('eca_l_vd')},
+    {name:'ПА R',vs:g('va_r_vs'),vd:g('va_r_vd')},
+    {name:'ПА L',vs:g('va_l_vs'),vd:g('va_l_vd')},
+  ];
+  const riLines=vessels.map(v=>`${v.name} RI: ${nz(ri(v.vs,v.vd),2)}`);
+  const v1_r=g('v1_r'),v2_r=g('v2_r'),v1_l=g('v1_l'),v2_l=g('v2_l');
+  const gradDropR=(v1_r&&v2_r)? (v1_r-v2_r)/v1_r*100:0;
+  const gradDropL=(v1_l&&v2_l)? (v1_l-v2_l)/v1_l*100:0;
+  const areaRatio=(g('area_vyav')&&g('area_osa'))? g('area_vyav')/g('area_osa'):0;
+  // соберём исходные данные
+  const src=[
+    `Рост ${h||'—'} см, Масса ${w||'—'} кг`,
+    `МЖПд ${ivsd||'—'} см, КДР ${lvedd||'—'} см, ТЗС ${pwd||'—'} см`,
+    `ΔE ${nz(e,2)} м/с, e′ ${nz(eprime,2)} м/с`,
+    `Vmax (м/с): MV ${nz(g('v_mv'))}, AV ${nz(g('v_av'))}, TV ${nz(g('v_tv'))}, PV ${nz(g('v_pv'))}`
+  ];
+  const res=[
+    '\nРасчётные показатели:',
+    `ППТ, м²: ${nz(bsa)}`,
+    `ММЛЖ, г: ${nz(lvMass,0)}`,
+    `ИММ, г/м²: ${nz(lvMassIdx,0)}`,
+    `Индекс ASE, г/м^2.7: ${nz(aseIdx,0)}`,
+    `ОТС: ${nz(ots,2)}`,
+    `Индекс объёма ЛП, мл/м²: ${nz(laIdx)}`,
+    `Индекс площади ПП, см²/м²: ${nz(raIdx)}`,
+    `Индекс диаметра аорты, мм/м: ${nz(aoIdx)}`,
+    `ΔP (E), мм рт. ст.: ${nz(egrad,1)}`,
+    `E/e′: ${nz(eeratio,1)}`,
+    `Градиенты клапанов, мм рт. ст.: MV ${nz(valve.MV,1)}, AV ${nz(valve.AV,1)}, TV ${nz(valve.TV,1)}, PV ${nz(valve.PV,1)}`,
+    '\nИндексы резистентности:',
+    ...riLines,
+    `\nПозвоночные артерии: снижение скорости R ${nz(gradDropR,1)}%, L ${nz(gradDropL,1)}%`,
+    `Соотношение площадей ВЯВ/ОСА: ${nz(areaRatio,2)}`,
+    '\n───'
+  ];
+  document.getElementById('out').value=[
+    'Исходные данные:',...src,res.join('\n')].join('\n');
+  document.getElementById('out').focus();
+  document.getElementById('out').select();
 }
 </script>
 </body>
